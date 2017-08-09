@@ -1,0 +1,59 @@
+{
+  "name": "style-helper",
+  "version": "0.0.0",
+  "description": "Small helpers for working with CSS-in-JS",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist/",
+    "LICENSE"
+  ],
+  "scripts": {
+    "lint": "tslint \"src/**/*.ts\" --project tsconfig.json --type-check",
+    "build": "rimraf dist/ && tsc",
+    "test:cov": "jest --coverage",
+    "test": "npm run build && npm run lint && npm run test:cov",
+    "prepublish": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/blakeembrey/style-helper.git"
+  },
+  "keywords": [
+    "style",
+    "helper",
+    "url",
+    "escape",
+    "free-style"
+  ],
+  "author": "Blake Embrey <hello@blakeembrey.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/blakeembrey/style-helper/issues"
+  },
+  "homepage": "https://github.com/blakeembrey/style-helper",
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "ts-jest/preprocessor.js"
+    },
+    "rootDir": "src/",
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "json"
+    ],
+    "mapCoverage": true
+  },
+  "devDependencies": {
+    "@types/jest": "^20.0.6",
+    "free-style": "^2.3.1",
+    "jest": "^20.0.4",
+    "rimraf": "^2.6.1",
+    "ts-jest": "^20.0.10",
+    "tslint": "^5.2.0",
+    "tslint-config-standard": "^6.0.0",
+    "typescript": "^2.3.2"
+  }
+}
