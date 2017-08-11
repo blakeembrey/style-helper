@@ -1,6 +1,6 @@
 {
   "name": "style-helper",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Small helpers for working with CSS-in-JS",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
