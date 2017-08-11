@@ -86,6 +86,7 @@ export function merge (...styles: Style[]) {
 export interface Registry {
   registerStyle (style: Style, displayName?: string): string
   registerKeyframes (style: Style, displayName?: string): string
+  registerHashRule (prefix: string, style: Style, displayName?: string): string
   registerRule (rule: string, style: Style): void
   registerCss (style: Style): void
 }
@@ -93,9 +94,7 @@ export interface Registry {
 /**
  * Input object for registering a style sheet.
  */
-export type StyleSheet <T extends string, S extends string> = {
-  [K in T]: Style | StyleFn<S>
-}
+export type StyleValue <S extends string> = Style | StyleFn<S>
 
 /**
  * Styles as a map.
@@ -107,15 +106,24 @@ export type StyleMap <T extends string> = {
 /**
  * Immediately invoked style functions.
  */
-export type StyleFn <T extends string> = (styles: StyleMap<T>, keyframes: StyleMap<string>) => Style
+export type StyleFn <T extends string> = (
+  styles: StyleMap<T>,
+  keyframes: StyleMap<string>,
+  hashRules: StyleMap<string>
+) => Style
 
 /**
  * Options available for `registerStyleSheet`.
  */
 export interface Options <S extends string> {
-  keyframes?: StyleSheet<string, S>
-  rules?: StyleSheet<string, S>
-  css?: Style | StyleFn<S>
+  keyframes?: {
+    [key: string]: StyleValue<S>
+  }
+  rules?: Array<[string, StyleValue<S>]>
+  hashRules?: {
+    [key: string]: [string, StyleValue<S>]
+  }
+  css?: StyleValue<S>
 }
 
 /**
@@ -123,35 +131,46 @@ export interface Options <S extends string> {
  */
 export function registerStyleSheet <T extends string> (
   Style: Registry,
-  sheet?: StyleSheet<T, T>,
+  sheet?: { [P in T]: StyleValue<T> },
   options: Options<T> = {}
 ): StyleMap<T> {
   const styles: StyleMap<T> = Object.create(null)
   const keyframes: StyleMap<string> = Object.create(null)
+  const hashRules: StyleMap<string> = Object.create(null)
 
-  function invoke (style: Style | StyleFn<T>) {
-    return typeof style === 'function' ? style(styles, keyframes) : style
+  function invoke (style: StyleValue<T>) {
+    if (typeof style === 'function') return style(styles, keyframes, hashRules)
+
+    return style
   }
 
-  if (options.keyframes) {
+  if (typeof options.keyframes === 'object') {
     for (const key of Object.keys(options.keyframes)) {
       keyframes[key] = Style.registerKeyframes(invoke(options.keyframes[key]), key)
     }
   }
 
-  if (options.rules) {
-    for (const rule of Object.keys(options.rules)) {
-      Style.registerRule(rule, invoke(options.rules[rule]))
+  if (Array.isArray(options.rules)) {
+    for (const rule of options.rules) {
+      Style.registerRule(rule[0], invoke(rule[1]))
     }
   }
 
-  if (sheet) {
+  if (typeof options.hashRules === 'object') {
+    for (const key of Object.keys(options.hashRules)) {
+      const rule = options.hashRules[key]
+
+      hashRules[key] = Style.registerHashRule(rule[0], invoke(rule[1]), key)
+    }
+  }
+
+  if (typeof sheet === 'object') {
     for (const key of Object.keys(sheet)) {
       styles[key] = Style.registerStyle(invoke(sheet[key]), key)
     }
   }
 
-  if (options.css) {
+  if (typeof options.css === 'object') {
     Style.registerCss(invoke(options.css))
   }
 
