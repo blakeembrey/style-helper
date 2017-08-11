@@ -138,7 +138,7 @@ export interface Options <S extends string> {
  */
 export function registerStyleSheet <T extends string> (
   Style: Registry,
-  sheet?: { [P in T]: StyleValue<T> },
+  sheet?: StyleSheet<T>,
   options: Options<T> = {}
 ): StyleMap<T> {
   const styles: StyleMap<T> = Object.create(null)
