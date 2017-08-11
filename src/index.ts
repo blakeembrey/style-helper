@@ -92,9 +92,16 @@ export interface Registry {
 }
 
 /**
- * Input object for registering a style sheet.
+ * Types allowed for style objects.
  */
 export type StyleValue <S extends string> = Style | StyleFn<S>
+
+/**
+ * Input object for registering a style sheet.
+ */
+export type StyleSheet <T extends string> = {
+  [P in T]: StyleValue<T>
+}
 
 /**
  * Styles as a map.
