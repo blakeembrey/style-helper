@@ -54,6 +54,6 @@
     "ts-jest": "^20.0.10",
     "tslint": "^5.2.0",
     "tslint-config-standard": "^6.0.0",
-    "typescript": "^2.3.2"
+    "typescript": "^2.5.2"
   }
 }
