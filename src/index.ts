@@ -172,7 +172,7 @@ export function registerStyleSheet <T extends string> (
   }
 
   if (typeof sheet === 'object') {
-    for (const key of Object.keys(sheet)) {
+    for (const key of Object.keys(sheet) as T[]) {
       styles[key] = Style.registerStyle(invoke(sheet[key]), key)
     }
   }
