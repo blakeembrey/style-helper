@@ -62,7 +62,7 @@ registerStyle(merge({ padding: 10 }, ellipsis))
 
 ### Register Style Sheet
 
-Utility for registering a map of styles onto a `Style` object (e.g. `free-style`). The styles can be objects or functions that return objects. The third `options` argument that supports `css`, `keyframes` and `rules` objects to also register.
+Utility for registering a map of styles onto a `Style` object (e.g. `free-style`). The styles can be objects or functions that return objects. The third `options` object argument supports `css`, `keyframes` and `rules` objects to also register.
 
 ```js
 import { create } from 'free-style'
@@ -81,6 +81,8 @@ registerStyleSheet(Style, {
   }
 })
 ```
+
+**Note:** Mirroring the underlying implementation, a fourth argument can be provided for the "debug prefix" (e.g. used for component names).
 
 ## License
 
