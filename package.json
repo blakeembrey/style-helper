@@ -47,7 +47,7 @@
     "mapCoverage": true
   },
   "devDependencies": {
-    "@types/jest": "^21.1.0",
+    "@types/jest": "^22.0.1",
     "free-style": "^2.3.1",
     "jest": "^21.0.0",
     "rimraf": "^2.6.1",
