@@ -51,7 +51,7 @@
     "free-style": "^2.3.1",
     "jest": "^21.0.0",
     "rimraf": "^2.6.1",
-    "ts-jest": "^21.0.0",
+    "ts-jest": "^22.0.3",
     "tslint": "^5.2.0",
     "tslint-config-standard": "^7.0.0",
     "typescript": "^2.3.2"
