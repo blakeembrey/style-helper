@@ -26,7 +26,7 @@ Wrap a string in quotes (useful for the psuedo-element `content` property).
 ```js
 registerStyle({
   '&:before': {
-    content: quote('Hello World')
+    content: quote('Hello World') //=> `"Hello World"`
   }
 })
 ```
@@ -37,16 +37,23 @@ Wrap a string in the CSS `url()` function.
 
 ```js
 registerStyle({
-  backgroundImage: url('image.png')
+  backgroundImage: url('image.png') //=> `url("image.png")`
 })
 ```
 
 ### Objectify
 
-Turn a list of arguments into an object.
+Turn a list of arguments into an object (`[key, value, ...]`).
 
 ```js
-registerStyle(objectify('padding', 10))
+// Simple properties.
+registerStyle(objectify('padding', 10)) //=> { padding: 10 }
+
+// Array key for repeating property values.
+registerStyle(objectify(
+  ['& .a', '& .b'],
+  { margin: 10 }
+)) //=> { '& .a': { margin: 10 }, '& .b': { margin: 10 } }
 ```
 
 ### Merge
@@ -56,12 +63,12 @@ Merge CSS objects recursively.
 ```js
 import { ellipsis } from './styles'
 
-registerStyle(merge({ padding: 10 }, ellipsis))
+registerStyle(merge({ padding: 10 }, ellipsis)) //=> { padding: 10, ... }
 ```
 
 ### Register Style Sheet
 
-Utility for registering a map of styles onto a `Style` object (e.g. `free-style`). The styles can be objects or functions that return objects. The third `options` object argument supports `css`, `keyframes` and `rules` objects to also register.
+Utility for registering a map of styles onto a `Style` object, such as [Free Style](https://github.com/blakeembrey/free-style). The styles can be objects or functions that return objects. The third `options` object argument supports `css`, `keyframes` and `rules` objects to register alongside the stylesheet.
 
 ```js
 import { create } from 'free-style'
@@ -69,10 +76,22 @@ import { create } from 'free-style'
 const Style = create()
 
 registerStyleSheet(Style, {
-  button: {
+  link: {
     color: 'red'
-  }
+  },
+  button: (styles, keyframes) => ({
+    '&:hover': {
+      animationName: keyframes.animate,
+      animationDuration: '1s'
+    }
+  })
 }, {
+  keyframes: {
+    animate: {
+      from: { color: 'red' },
+      to: { color: 'green' }
+    }
+  }
   css: {
     html: {
       margin: 0
@@ -81,7 +100,8 @@ registerStyleSheet(Style, {
 })
 ```
 
-**Note:** Mirroring the underlying implementation, a fourth argument can be provided for the "debug prefix" (e.g. used for component names).
+**Tip:** A fourth argument can be provided for the "debug prefix" (e.g. "component name").
+
 
 ## License
 
