@@ -9,7 +9,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "lint": "tslint \"src/**/*.ts\" --project tsconfig.json --type-check",
+    "lint": "tslint \"src/**/*.ts\" --project tsconfig.json",
     "build": "rimraf dist/ && tsc",
     "test:cov": "jest --coverage",
     "test": "npm run build && npm run lint && npm run test:cov",
@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@types/jest": "^22.2.0",
+    "@types/node": "^9.4.7",
     "free-style": "^2.3.1",
     "jest": "^22.4.3",
     "rimraf": "^2.6.1",
