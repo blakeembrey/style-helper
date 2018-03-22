@@ -103,7 +103,7 @@ export interface Registry {
 /**
  * Types allowed for style objects.
  */
-export type StyleValue <S extends string> = Style | StyleFn<S>
+export type StyleValue <S extends string> = StyleFn<S> | Style
 
 /**
  * Input object for registering a style sheet.
@@ -132,6 +132,7 @@ export type StyleFn <T extends string> = (
  * Options available for `registerStyleSheet`.
  */
 export interface Options <S extends string> {
+  lazy?: boolean
   keyframes?: {
     [key: string]: StyleValue<S>
   }
@@ -162,29 +163,56 @@ export function registerStyleSheet <T extends string> (
     return style
   }
 
-  if (typeof options.keyframes === 'object') {
-    for (const key of Object.keys(options.keyframes)) {
-      keyframes[key] = Style.registerKeyframes(invoke(options.keyframes[key]), prefix + key)
+  function register (obj: StyleMap<string>, key: string, compute: () => string) {
+    if (!options.lazy) {
+      const value = compute()
+      return Object.defineProperty(obj, key, { enumerable: true, value })
     }
+
+    return Object.defineProperty(obj, key, {
+      enumerable: true,
+      configurable: true,
+      get () {
+        const value = compute()
+        Object.defineProperty(obj, key, { enumerable: true, value })
+        return value
+      }
+    })
   }
 
-  if (Array.isArray(options.rules)) {
-    for (const rule of options.rules) {
-      Style.registerRule(rule[0], invoke(rule[1]))
+  if (typeof options.keyframes === 'object') {
+    for (const key of Object.keys(options.keyframes)) {
+      const keyframe = options.keyframes[key]
+
+      register(keyframes, key, () => {
+        return Style.registerKeyframes(invoke(keyframe), prefix + key)
+      })
     }
   }
 
   if (typeof options.hashRules === 'object') {
     for (const key of Object.keys(options.hashRules)) {
-      const rule = options.hashRules[key]
+      const [hashKey, hashRule] = options.hashRules[key]
 
-      hashRules[key] = Style.registerHashRule(rule[0], invoke(rule[1]), prefix + key)
+      register(hashRules, key, () => {
+        return Style.registerHashRule(hashKey, invoke(hashRule), prefix + key)
+      })
     }
   }
 
   if (typeof sheet === 'object') {
     for (const key of Object.keys(sheet) as T[]) {
-      styles[key] = Style.registerStyle(invoke(sheet[key]), prefix + key)
+      const style = sheet[key]
+
+      register(styles, key, () => {
+        return Style.registerStyle(invoke(style), prefix + key)
+      })
+    }
+  }
+
+  if (Array.isArray(options.rules)) {
+    for (const [key, value] of options.rules) {
+      Style.registerRule(key, invoke(value))
     }
   }
 

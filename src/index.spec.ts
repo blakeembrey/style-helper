@@ -69,7 +69,47 @@ describe('style helper', () => {
     })
 
     expect(Object.keys(styles)).toEqual(['button'])
-
     expect(Style.getStyles()).toEqual(`.${styles.button}{color:red}html{margin:0}`)
+  })
+
+  it('should support lazy styles', () => {
+    const Style = create()
+    let keyframesHash: string | undefined
+
+    const styles = registerStyleSheet<string>(Style, {
+      link: {
+        color: 'red'
+      },
+      input: () => ({
+        color: 'green'
+      }),
+      button: (styles, keyframes) => ({
+        animation: `${(keyframesHash = keyframes.animation)} 1s infinite`
+      })
+    }, {
+      lazy: true,
+      keyframes: {
+        animation: {
+          from: { color: 'red' },
+          to: { color: 'blue' }
+        }
+      }
+    })
+
+    expect(Object.keys(styles)).toEqual(['link', 'input', 'button'])
+    expect(Style.getStyles()).toEqual('')
+
+    // "Use" the style.
+    const beforeDescriptor = Object.getOwnPropertyDescriptor(styles, 'button')
+    const buttonHash = styles.button
+    const afterDescriptor = Object.getOwnPropertyDescriptor(styles, 'button')
+
+    expect(beforeDescriptor!.value).toEqual(undefined)
+    expect(afterDescriptor!.value).toEqual(buttonHash)
+
+    expect(Style.getStyles()).toEqual(
+      `@keyframes ${keyframesHash}{from{color:red}to{color:blue}}` +
+      `.${buttonHash}{animation:${keyframesHash} 1s infinite}`
+    )
   })
 })
