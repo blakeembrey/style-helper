@@ -4,7 +4,6 @@
 [![NPM downloads](https://img.shields.io/npm/dm/style-helper.svg?style=flat)](https://npmjs.org/package/style-helper)
 [![Build status](https://img.shields.io/travis/blakeembrey/style-helper.svg?style=flat)](https://travis-ci.org/blakeembrey/style-helper)
 [![Test coverage](https://img.shields.io/coveralls/blakeembrey/style-helper.svg?style=flat)](https://coveralls.io/r/blakeembrey/style-helper?branch=master)
-[![Greenkeeper badge](https://badges.greenkeeper.io/blakeembrey/style-helper.svg)](https://greenkeeper.io/)
 
 > **Style Helper** is a small utility for CSS-in-JS functions.
 
