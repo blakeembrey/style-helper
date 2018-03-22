@@ -17,6 +17,15 @@ describe('style helper', () => {
     })
   })
 
+  it('should support objectifying keys as arrays', () => {
+    const key = ['.a', '.b']
+
+    expect(objectify(key, { margin: 10 })).toEqual({
+      '.a': { margin: 10 },
+      '.b': { margin: 10 }
+    })
+  })
+
   it('should merge css object together', () => {
     expect(merge(
       {

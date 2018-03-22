@@ -42,11 +42,20 @@ export function url (value: string) {
 /**
  * Turn a list of styles into an object.
  */
-export function objectify (...args: PropertyValue[]) {
+export function objectify (...args: (PropertyValue | Style)[]) {
   const obj: Style = Object.create(null)
 
   for (let i = 0; i < args.length; i += 2) {
-    obj[String(args[i])] = args[i + 1]
+    const key = args[i]
+    const value = args[i + 1]
+
+    if (Array.isArray(key)) {
+      for (let j = 0; j < key.length; j++) {
+        obj[String(key[j])] = value
+      }
+    } else {
+      obj[String(key)] = value
+    }
   }
 
   return obj
