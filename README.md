@@ -68,7 +68,7 @@ registerStyle(merge({ padding: 10 }, ellipsis)) //=> { padding: 10, ... }
 
 ### Register Style Sheet
 
-Utility for registering a map of styles onto a `Style` object, such as [Free Style](https://github.com/blakeembrey/free-style). The styles can be objects or functions that return objects. The third `options` object argument supports `css`, `keyframes` and `rules` objects to register alongside the stylesheet.
+Utility for registering a map of styles onto a `Style` object, such as [Free Style](https://github.com/blakeembrey/free-style). The styles can be objects or functions that return objects. The third `options` object argument supports `keyframes`, `hashRules`, `rules` and `css` objects to register alongside the stylesheet.
 
 ```js
 import { create } from 'free-style'
@@ -79,7 +79,7 @@ registerStyleSheet(Style, {
   link: {
     color: 'red'
   },
-  button: (styles, keyframes) => ({
+  button: (styles, keyframes, hashRules) => ({
     '&:hover': {
       animationName: keyframes.animate,
       animationDuration: '1s'
@@ -91,7 +91,7 @@ registerStyleSheet(Style, {
       from: { color: 'red' },
       to: { color: 'green' }
     }
-  }
+  },
   css: {
     html: {
       margin: 0
@@ -102,6 +102,13 @@ registerStyleSheet(Style, {
 
 **Tip:** A fourth argument can be provided for the "debug prefix" (e.g. "component name").
 
+#### Options
+
+* `lazy: boolean` Style sheet properties are only registered on first access (useful for large base CSS kits or utility libraries)
+* `keyframes: Object<object>` Map of keyframes labels alongside styles
+* `hashRules: Object<[string, object]>` Map of hash rules to register alongside styles
+* `rules: Array<[string, object]>` List of rules to register immediately
+* `css: object` Raw CSS object to register immediately
 
 ## License
 
