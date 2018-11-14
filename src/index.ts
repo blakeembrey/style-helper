@@ -200,7 +200,7 @@ export type StyleSheet <T extends string> = Record<T, StyleValue>
  */
 export function registerStyleSheet <S extends string> (
   Style: Registry,
-  sheet?: { [K in S]: StyleValue },
+  sheet?: StyleSheet<S>,
   css?: StyleValue,
   registeredName?: string
 ): Record<S, string> {
