@@ -34,7 +34,7 @@
   "homepage": "https://github.com/blakeembrey/style-helper",
   "jest": {
     "transform": {
-      ".(ts|tsx)": "ts-jest/preprocessor.js"
+      "\\.tsx?$": "ts-jest"
     },
     "rootDir": "src/",
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
@@ -46,14 +46,17 @@
     ]
   },
   "devDependencies": {
-    "@types/jest": "^22.2.0",
-    "@types/node": "^9.4.7",
-    "free-style": "^2.3.1",
-    "jest": "^22.4.3",
+    "@types/jest": "^23.3.9",
+    "@types/node": "^10.12.7",
+    "free-style": "^2.5.2",
+    "jest": "^23.6.0",
     "rimraf": "^2.6.1",
-    "ts-jest": "^22.4.2",
-    "tslint": "^5.9.1",
-    "tslint-config-standard": "^7.0.0",
-    "typescript": "^2.3.2"
+    "ts-jest": "^23.10.4",
+    "tslint": "^5.11.0",
+    "tslint-config-standard": "^8.0.1",
+    "typescript": "^3.1.6"
+  },
+  "dependencies": {
+    "csstype": "^2.5.7"
   }
 }

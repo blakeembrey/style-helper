@@ -7,6 +7,8 @@
 
 > **Style Helper** is a small utility for CSS-in-JS functions.
 
+Uses [`csstype`](https://github.com/frenic/csstype) for improve DX.
+
 ## Installation
 
 ```
@@ -50,10 +52,16 @@ Turn a list of arguments into an object (`[key, value, ...]`).
 registerStyle(objectify('padding', 10)) //=> { padding: 10 }
 
 // Array key for repeating property values.
-registerStyle(objectify(
-  ['& .a', '& .b'],
-  { margin: 10 }
-)) //=> { '& .a': { margin: 10 }, '& .b': { margin: 10 } }
+registerStyle(objectify([
+  [
+    '& .b',
+    { margin: 20 }
+  ],
+  [
+    '& .a',
+    { margin: 10 }
+  ]
+])) //=> { '& .a': { margin: 10 }, '& .b': { margin: 10 } }
 ```
 
 ### Merge
@@ -79,36 +87,27 @@ registerStyleSheet(Style, {
   link: {
     color: 'red'
   },
-  button: (styles, keyframes, hashRules) => ({
-    '&:hover': {
-      animationName: keyframes.animate,
-      animationDuration: '1s'
-    }
-  })
-}, {
-  keyframes: {
-    animate: {
+  button: (registry) => {
+    const name = registry.registerKeyframes({
       from: { color: 'red' },
       to: { color: 'green' }
+    })
+
+    return {
+      '&:hover': {
+        animationName: name,
+        animationDuration: '1s'
+      }
     }
-  },
-  css: {
-    html: {
-      margin: 0
-    }
+  }
+}, {
+  html: {
+    margin: 0
   }
 })
 ```
 
 **Tip:** A fourth argument can be provided for the "debug prefix" (e.g. "component name").
-
-#### Options
-
-* `lazy: boolean` Style sheet properties are only registered on first access (useful for large base CSS kits or utility libraries)
-* `keyframes: Object<object>` Map of keyframes labels alongside styles
-* `hashRules: Object<[string, object]>` Map of hash rules to register alongside styles
-* `rules: Array<[string, object]>` List of rules to register immediately
-* `css: object` Raw CSS object to register immediately
 
 ## License
 

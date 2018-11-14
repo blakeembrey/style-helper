@@ -1,5 +1,5 @@
 import { create } from 'free-style'
-import { quote, url, objectify, merge, registerStyleSheet } from './index'
+import { quote, url, objectify, merge, registerStyleSheet, StyleSheetRegistry } from './index'
 
 describe('style helper', () => {
   it('should quote a string', () => {
@@ -12,7 +12,7 @@ describe('style helper', () => {
   })
 
   it('should turn styles into an object', () => {
-    expect(objectify('padding', 10)).toEqual({
+    expect(objectify([['padding', 10]])).toEqual({
       padding: 10
     })
   })
@@ -20,7 +20,7 @@ describe('style helper', () => {
   it('should support objectifying keys as arrays', () => {
     const key = ['.a', '.b']
 
-    expect(objectify(key, { margin: 10 })).toEqual({
+    expect(objectify([[key, { margin: 10 }]])).toEqual({
       '.a': { margin: 10 },
       '.b': { margin: 10 }
     })
@@ -61,10 +61,8 @@ describe('style helper', () => {
         color: 'red'
       }
     }, {
-      css: {
-        html: {
-          margin: 0
-        }
+      html: {
+        margin: 0
       }
     })
 
@@ -72,44 +70,35 @@ describe('style helper', () => {
     expect(Style.getStyles()).toEqual(`.${styles.button}{color:red}html{margin:0}`)
   })
 
-  it('should support lazy styles', () => {
+  it('should register style sheets with functions', () => {
     const Style = create()
     let keyframesHash: string | undefined
 
-    const styles = registerStyleSheet<string>(Style, {
+    const styles = registerStyleSheet(Style, {
       link: {
         color: 'red'
       },
       input: () => ({
         color: 'green'
       }),
-      button: (styles, keyframes) => ({
-        animation: `${(keyframesHash = keyframes.animation)} 1s infinite`
-      })
-    }, {
-      lazy: true,
-      keyframes: {
-        animation: {
+      button: (registry: StyleSheetRegistry) => {
+        keyframesHash = registry.registerKeyframes({
           from: { color: 'red' },
           to: { color: 'blue' }
+        })
+
+        return {
+          animation: `${keyframesHash} 1s infinite`
         }
       }
     })
 
     expect(Object.keys(styles)).toEqual(['link', 'input', 'button'])
-    expect(Style.getStyles()).toEqual('')
-
-    // "Use" the style.
-    const beforeDescriptor = Object.getOwnPropertyDescriptor(styles, 'button')
-    const buttonHash = styles.button
-    const afterDescriptor = Object.getOwnPropertyDescriptor(styles, 'button')
-
-    expect(beforeDescriptor!.value).toEqual(undefined)
-    expect(afterDescriptor!.value).toEqual(buttonHash)
 
     expect(Style.getStyles()).toEqual(
+      `.${styles.link}{color:red}.${styles.input}{color:green}` +
       `@keyframes ${keyframesHash}{from{color:red}to{color:blue}}` +
-      `.${buttonHash}{animation:${keyframesHash} 1s infinite}`
+      `.${styles.button}{animation:${keyframesHash} 1s infinite}`
     )
   })
 })

@@ -1,3 +1,5 @@
+import { PropertiesFallback } from 'csstype'
+
 const ESCAPES: { [key: string]: string } = {
   '"': '\\"',
   '\\': '\\\\',
@@ -7,15 +9,74 @@ const ESCAPES: { [key: string]: string } = {
 const ESCAPE_REGEXP = new RegExp(`[${Object.keys(ESCAPES).join('|')}]`, 'g')
 
 /**
- * Valid property values.
+ * Typed style object.
+ *
+ * Based on https://github.com/typestyle/typestyle/pull/245/files
  */
-export type PropertyValue = null | undefined | number | boolean | string | Array<null | undefined | number | boolean | string>
+export interface Style extends PropertiesFallback<string | number> {
+  /** State selector */
+  '&:active'?: Style
+  '&:any'?: Style
+  '&:checked'?: Style
+  '&:default'?: Style
+  '&:disabled'?: Style
+  '&:empty'?: Style
+  '&:enabled'?: Style
+  '&:first'?: Style
+  '&:first-child'?: Style
+  '&:first-of-type'?: Style
+  '&:fullscreen'?: Style
+  '&:focus'?: Style
+  '&:hover'?: Style
+  '&:indeterminate'?: Style
+  '&:in-range'?: Style
+  '&:invalid'?: Style
+  '&:last-child'?: Style
+  '&:last-of-type'?: Style
+  '&:left'?: Style
+  '&:link'?: Style
+  '&:only-child'?: Style
+  '&:only-of-type'?: Style
+  '&:optional'?: Style
+  '&:out-of-range'?: Style
+  '&:read-only'?: Style
+  '&:read-write'?: Style
+  '&:required'?: Style
+  '&:right'?: Style
+  '&:root'?: Style
+  '&:scope'?: Style
+  '&:target'?: Style
+  '&:valid'?: Style
+  '&:visited'?: Style
+  /**
+   * Pseudo-elements
+   * https://developer.mozilla.org/en/docs/Web/CSS/Pseudo-elements
+   */
+  '&::after'?: Style
+  '&::before'?: Style
+  '&::first-letter'?: Style
+  '&::first-line'?: Style
+  '&::selection'?: Style
+  '&::backdrop'?: Style
+  '&::placeholder'?: Style
+  '&::marker'?: Style
+  '&::spelling-error'?: Style
+  '&::grammar-error'?: Style
 
-/**
- * Valid style object.
- */
-export interface Style {
-  [selector: string]: PropertyValue | Style
+  /** Children */
+  '&>*'?: Style
+
+  /**
+   * Mobile first media query example
+   */
+  '@media screen and (min-width: 700px)'?: Style
+
+  /**
+   * Desktop first media query example
+   */
+  '@media screen and (max-width: 700px)'?: Style
+
+  [selector: string]: string | number | (string | number)[] | Style | undefined
 }
 
 /**
@@ -42,19 +103,16 @@ export function url (value: string) {
 /**
  * Turn a list of styles into an object.
  */
-export function objectify (...args: (PropertyValue | Style)[]) {
-  const obj: Style = Object.create(null)
+export function objectify <T extends keyof Style> (
+  styles: Array<[T | T[], Style[T]]>
+) {
+  const obj: Pick<Style, T> = Object.create(null)
 
-  for (let i = 0; i < args.length; i += 2) {
-    const key = args[i]
-    const value = args[i + 1]
-
+  for (const [key, value] of styles) {
     if (Array.isArray(key)) {
-      for (let j = 0; j < key.length; j++) {
-        obj[String(key[j])] = value
-      }
+      for (const k of key) obj[k] = value
     } else {
-      obj[String(key)] = value
+      obj[key] = value
     }
   }
 
@@ -101,124 +159,68 @@ export interface Registry {
 }
 
 /**
+ * Internal registry wrapper.
+ */
+export class StyleSheetRegistry implements Registry {
+  constructor (public registry: Registry, public prefix: string) {}
+
+  registerStyle (style: Style, key = '') {
+    return this.registry.registerStyle(style, this.prefix + key)
+  }
+
+  registerKeyframes (style: Style, key = '') {
+    return this.registry.registerKeyframes(style, key)
+  }
+
+  registerHashRule (rule: string, style: Style, key = '') {
+    return this.registry.registerHashRule(rule, style, this.prefix + key)
+  }
+
+  registerRule (rule: string, style: Style) {
+    return this.registry.registerRule(rule, style)
+  }
+
+  registerCss (style: Style) {
+    return this.registry.registerCss(style)
+  }
+}
+
+/**
  * Types allowed for style objects.
  */
-export type StyleValue <S extends string> = StyleFn<S> | Style
+export type StyleValue = ((registry: StyleSheetRegistry) => Style) | Style
 
 /**
  * Input object for registering a style sheet.
  */
-export type StyleSheet <T extends string> = {
-  [P in T]: StyleValue<T>
-}
-
-/**
- * Styles as a map.
- */
-export type StyleMap <T extends string> = {
-  [K in T]: string
-}
-
-/**
- * Immediately invoked style functions.
- */
-export type StyleFn <T extends string> = (
-  styles: StyleMap<T>,
-  keyframes: StyleMap<string>,
-  hashRules: StyleMap<string>
-) => Style
-
-/**
- * Options available for `registerStyleSheet`.
- */
-export interface Options <S extends string> {
-  lazy?: boolean
-  keyframes?: {
-    [key: string]: StyleValue<S>
-  }
-  rules?: Array<[string, StyleValue<S>]>
-  hashRules?: {
-    [key: string]: [string, StyleValue<S>]
-  }
-  css?: StyleValue<S>
-}
+export type StyleSheet <T extends string> = Record<T, StyleValue>
 
 /**
  * Register a style sheet object with support for functions.
  */
-export function registerStyleSheet <T extends string> (
+export function registerStyleSheet <S extends string> (
   Style: Registry,
-  sheet?: StyleSheet<T>,
-  options: Options<T> = {},
+  sheet?: { [K in S]: StyleValue },
+  css?: StyleValue,
   registeredName?: string
-): StyleMap<T> {
-  const styles: StyleMap<T> = Object.create(null)
-  const keyframes: StyleMap<string> = Object.create(null)
-  const hashRules: StyleMap<string> = Object.create(null)
+): Record<S, string> {
+  const styles: Record<S, string> = Object.create(null)
   const prefix = registeredName ? `${registeredName}_` : ''
+  const registry = new StyleSheetRegistry(Style, prefix)
 
-  function invoke (style: StyleValue<T>) {
-    if (typeof style === 'function') return style(styles, keyframes, hashRules)
-
-    return style
+  function toStyle (style: StyleValue) {
+    return typeof style === 'function' ? style(registry) : style
   }
 
-  function register (obj: StyleMap<string>, key: string, compute: () => string) {
-    if (!options.lazy) {
-      const value = compute()
-      return Object.defineProperty(obj, key, { enumerable: true, value })
-    }
-
-    return Object.defineProperty(obj, key, {
-      enumerable: true,
-      configurable: true,
-      get () {
-        const value = compute()
-        Object.defineProperty(obj, key, { enumerable: true, value })
-        return value
-      }
-    })
-  }
-
-  if (typeof options.keyframes === 'object') {
-    for (const key of Object.keys(options.keyframes)) {
-      const keyframe = options.keyframes[key]
-
-      register(keyframes, key, () => {
-        return Style.registerKeyframes(invoke(keyframe), prefix + key)
-      })
-    }
-  }
-
-  if (typeof options.hashRules === 'object') {
-    for (const key of Object.keys(options.hashRules)) {
-      const [hashKey, hashRule] = options.hashRules[key]
-
-      register(hashRules, key, () => {
-        return Style.registerHashRule(hashKey, invoke(hashRule), prefix + key)
-      })
-    }
-  }
-
+  // Register style properties.
   if (typeof sheet === 'object') {
-    for (const key of Object.keys(sheet) as T[]) {
-      const style = sheet[key]
-
-      register(styles, key, () => {
-        return Style.registerStyle(invoke(style), prefix + key)
-      })
+    for (const key of Object.keys(sheet) as S[]) {
+      styles[key] = Style.registerStyle(toStyle(sheet[key]))
     }
   }
 
-  if (Array.isArray(options.rules)) {
-    for (const [key, value] of options.rules) {
-      Style.registerRule(key, invoke(value))
-    }
-  }
-
-  if (typeof options.css === 'object') {
-    Style.registerCss(invoke(options.css))
-  }
+  // Register global css when provided.
+  if (typeof css === 'object') Style.registerCss(toStyle(css))
 
   return styles
 }
