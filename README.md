@@ -49,7 +49,9 @@ Turn a list of arguments into an object (`[key, value, ...]`).
 
 ```js
 // Simple properties.
-registerStyle(objectify('padding', 10)) //=> { padding: 10 }
+registerStyle(objectify([
+  ['padding', 10]
+])) //=> { padding: 10 }
 
 // Array key for repeating property values.
 registerStyle(objectify([
