@@ -37,10 +37,10 @@ export interface Style {
 /**
  * Turn a list of styles into an object.
  */
-export function objectify <T extends string> (
-  ...styles: Array<[T | T[], Style[T]]>
+export function objectify <T extends string, U extends Style[T]> (
+  ...styles: Array<[T | T[], U]>
 ) {
-  const obj: Pick<Style, T> = Object.create(null)
+  const obj: Record<T, U> = Object.create(null)
 
   for (const [key, value] of styles) {
     if (Array.isArray(key)) {
@@ -58,11 +58,11 @@ export function objectify <T extends string> (
  *
  * Reference: https://github.com/blakeembrey/free-style/issues/72.
  */
-export function multi <T extends string> (
+export function multi <T extends string, U extends Style> (
   selectors: T[],
-  style: Style
+  style: U
 ) {
-  const obj: Record<T, Style> = Object.create(null)
+  const obj: Record<T, U> = Object.create(null)
   for (const selector of selectors) obj[selector] = style
   return obj
 }
@@ -75,19 +75,37 @@ export function isStyle (value: any): value is Style {
 }
 
 /**
+ * Recursive object merge type.
+ */
+export type Merge <T, U> = [T, U] extends [object, object]
+  ? {
+      [K in keyof T | keyof U]: K extends keyof (T | U)
+        ? Merge<T[K], U[K]>
+        : K extends keyof T
+        ? T[K]
+        : K extends keyof U
+        ? U[K]
+        : never
+    }
+  : U
+
+/**
  * Merge CSS styles recursively.
  */
-export function merge (...styles: Style[]) {
-  const result: Style = Object.create(null)
+export function merge <T1 extends Style> (s1: T1): T1
+export function merge <T1 extends Style, T2 extends Style> (s1: T1, s2: T2): Merge<T1, T2>
+export function merge <T1 extends Style, T2 extends Style, T3 extends Style> (s1: T1, s2: T2, s3: T3): Merge<Merge<T1, T2>, T3>
+export function merge <T1 extends Style, T2 extends Style, T3 extends Style, T4 extends Style> (s1: T1, s2: T2, s3: T3, s4: T4): Merge<Merge<Merge<T1, T2>, T3>, T4>
+export function merge <T1 extends Style, T2 extends Style, T3 extends Style, T4 extends Style, T5 extends Style> (s1: T1, s2: T2, s3: T3, s4: T4, s5: T5): Merge<Merge<Merge<Merge<T1, T2>, T3>, T4>, T5>
+export function merge <T extends Style, U extends Style> (...args: any[]) {
+  const result: any = Object.create(null)
 
-  for (const style of styles) {
+  for (const style of args) {
     for (const key of Object.keys(style)) {
-      const value = style[key]
-
-      if (isStyle(value) && isStyle(result[key])) {
-        result[key] = merge(result[key] as Style, value)
+      if (isStyle(result[key]) && isStyle(style[key])) {
+        result[key] = merge(result[key] as Style, style[key] as Style)
       } else {
-        result[key] = value
+        result[key] = style[key]
       }
     }
   }
