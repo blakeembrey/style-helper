@@ -1,5 +1,4 @@
-import { create } from 'free-style'
-import { quote, url, objectify, merge, registerStyleSheet, StyleSheetRegistry } from './index'
+import { quote, url, objectify, merge } from './index'
 
 describe('style helper', () => {
   it('should quote a string', () => {
@@ -51,54 +50,5 @@ describe('style helper', () => {
         padding: 5
       }
     })
-  })
-
-  it('should register style sheets', () => {
-    const Style = create()
-
-    const styles = registerStyleSheet(Style, {
-      button: {
-        color: 'red'
-      }
-    }, {
-      html: {
-        margin: 0
-      }
-    })
-
-    expect(Object.keys(styles)).toEqual(['button'])
-    expect(Style.getStyles()).toEqual(`.${styles.button}{color:red}html{margin:0}`)
-  })
-
-  it('should register style sheets with functions', () => {
-    const Style = create()
-    let keyframesHash: string | undefined
-
-    const styles = registerStyleSheet(Style, {
-      link: {
-        color: 'red'
-      },
-      input: () => ({
-        color: 'green'
-      }),
-      button: (registry: StyleSheetRegistry) => {
-        keyframesHash = registry.registerKeyframes({
-          from: { color: 'red' },
-          to: { color: 'blue' }
-        })
-
-        return {
-          animation: `${keyframesHash} 1s infinite`
-        }
-      }
-    })
-
-    expect(Object.keys(styles)).toEqual(['link', 'input', 'button'])
-
-    expect(Style.getStyles()).toEqual(
-      `.${styles.link}{color:red}.${styles.input}{color:green}` +
-      `@keyframes ${keyframesHash}{from{color:red}to{color:blue}}` +
-      `.${styles.button}{animation:${keyframesHash} 1s infinite}`
-    )
   })
 })

@@ -46,17 +46,13 @@
     ]
   },
   "devDependencies": {
-    "@types/jest": "^23.3.9",
-    "@types/node": "^10.12.7",
-    "free-style": "^2.5.2",
-    "jest": "^23.6.0",
+    "@types/jest": "^24.0.11",
+    "@types/node": "^11.13.0",
+    "jest": "^24.7.1",
     "rimraf": "^2.6.1",
-    "ts-jest": "^23.10.4",
+    "ts-jest": "^24.0.1",
     "tslint": "^5.11.0",
     "tslint-config-standard": "^8.0.1",
     "typescript": "^3.1.6"
-  },
-  "dependencies": {
-    "csstype": "^2.5.7"
   }
 }
