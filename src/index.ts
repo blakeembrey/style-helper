@@ -38,9 +38,9 @@ export interface Style {
  * Turn a list of styles into an object.
  */
 export function objectify <T extends string> (
-  styles: Array<[T | T[], Style[T]]>
+  ...styles: Array<[T | T[], Style[T]]>
 ) {
-  const obj: Record<T, Style[T]> = Object.create(null)
+  const obj: Pick<Style, T> = Object.create(null)
 
   for (const [key, value] of styles) {
     if (Array.isArray(key)) {
@@ -54,6 +54,20 @@ export function objectify <T extends string> (
 }
 
 /**
+ * Repeats the same style for multiple selectors.
+ *
+ * Reference: https://github.com/blakeembrey/free-style/issues/72.
+ */
+export function multi <T extends string> (
+  selectors: T[],
+  style: Style
+) {
+  const obj: Record<T, Style> = Object.create(null)
+  for (const selector of selectors) obj[selector] = style
+  return obj
+}
+
+/**
  * Check if an object looks like a style.
  */
 export function isStyle (value: any): value is Style {
@@ -61,7 +75,7 @@ export function isStyle (value: any): value is Style {
 }
 
 /**
- * Merge a list of styles together.
+ * Merge CSS styles recursively.
  */
 export function merge (...styles: Style[]) {
   const result: Style = Object.create(null)

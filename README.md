@@ -18,7 +18,7 @@ npm install style-helper --save
 ## Usage
 
 ```js
-import { quote, url, objectify, merge, registerStyleSheet } from 'style-helper'
+import { quote, url, objectify, merge } from 'style-helper'
 ```
 
 ### Quote
@@ -26,7 +26,7 @@ import { quote, url, objectify, merge, registerStyleSheet } from 'style-helper'
 Wrap a string in quotes (useful for the psuedo-element `content` property).
 
 ```js
-registerStyle({
+css({
   '&:before': {
     content: quote('Hello World') //=> `"Hello World"`
   }
@@ -38,32 +38,9 @@ registerStyle({
 Wrap a string in the CSS `url()` function.
 
 ```js
-registerStyle({
+css({
   backgroundImage: url('image.png') //=> `url("image.png")`
 })
-```
-
-### Objectify
-
-Turn a list of arguments into an object (`[key, value, ...]`).
-
-```js
-// Simple properties.
-registerStyle(objectify([
-  ['padding', 10]
-])) //=> { padding: 10 }
-
-// Array key for repeating property values.
-registerStyle(objectify([
-  [
-    '& .b',
-    { margin: 20 }
-  ],
-  [
-    '& .a',
-    { margin: 10 }
-  ]
-])) //=> { '& .a': { margin: 10 }, '& .b': { margin: 10 } }
 ```
 
 ### Merge
@@ -73,43 +50,36 @@ Merge CSS objects recursively.
 ```js
 import { ellipsis } from './styles'
 
-registerStyle(merge({ padding: 10 }, ellipsis)) //=> { padding: 10, ... }
+css(merge({ padding: 10 }, ellipsis)) //=> { padding: 10, ... }
 ```
 
-### Register Style Sheet
+### Multi
 
-Utility for registering a map of styles onto a `Style` object, such as [Free Style](https://github.com/blakeembrey/free-style). The styles can be objects or functions that return objects. The third `options` object argument supports `keyframes`, `hashRules`, `rules` and `css` objects to register alongside the stylesheet.
+Repeats the same style for multiple selectors ([reference issue](https://github.com/blakeembrey/free-style/issues/72)).
 
 ```js
-import { create } from 'free-style'
-
-const Style = create()
-
-registerStyleSheet(Style, {
-  link: {
-    color: 'red'
-  },
-  button: (registry) => {
-    const name = registry.registerKeyframes({
-      from: { color: 'red' },
-      to: { color: 'green' }
-    })
-
-    return {
-      '&:hover': {
-        animationName: name,
-        animationDuration: '1s'
-      }
-    }
-  }
-}, {
-  html: {
-    margin: 0
-  }
-})
+css(multi(['& .a', '& .b'], { margin: 10 }))
 ```
 
-**Tip:** A fourth argument can be provided for the "debug prefix" (e.g. "component name").
+### Objectify
+
+Turn a list of arguments into an object (`...[key, value]`).
+
+```js
+// Simple properties.
+css(objectify(
+  ['padding', 10],
+  ['margin', 10]
+)) //=> { padding: 10, margin: 10 }
+
+// Array key for repeating property values.
+css(objectify(
+  [
+    ['& .a', '& .b'],
+    { margin: 10 }
+  ]
+)) //=> { '& .a': { margin: 10 }, '& .b': { margin: 10 } }
+```
 
 ## License
 

@@ -1,4 +1,4 @@
-import { quote, url, objectify, merge } from './index'
+import { quote, url, objectify, merge, multi } from './index'
 
 describe('style helper', () => {
   it('should quote a string', () => {
@@ -11,7 +11,7 @@ describe('style helper', () => {
   })
 
   it('should turn styles into an object', () => {
-    expect(objectify([['padding', 10]])).toEqual({
+    expect(objectify(['padding', 10])).toEqual({
       padding: 10
     })
   })
@@ -19,7 +19,7 @@ describe('style helper', () => {
   it('should support objectifying keys as arrays', () => {
     const key = ['.a', '.b']
 
-    expect(objectify([[key, { margin: 10 }]])).toEqual({
+    expect(objectify([key, { margin: 10 }])).toEqual({
       '.a': { margin: 10 },
       '.b': { margin: 10 }
     })
@@ -49,6 +49,13 @@ describe('style helper', () => {
         margin: 0,
         padding: 5
       }
+    })
+  })
+
+  it('should support multi style objects', () => {
+    expect(multi(['& .a', '& .b'], { margin: 10 })).toEqual({
+      '& .a': { margin: 10 },
+      '& .b': { margin: 10 }
     })
   })
 })
