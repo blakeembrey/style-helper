@@ -7,8 +7,6 @@
 
 > **Style Helper** is a small utility for CSS-in-JS functions.
 
-Uses [`csstype`](https://github.com/frenic/csstype) for improve DX.
-
 ## Installation
 
 ```
